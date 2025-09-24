@@ -15,25 +15,27 @@ The chatbot can read PDFs, store their embeddings in a vector database, and answ
 ## 🏗️ Tech Stack
 - **Frontend**: Next.js 13+, React, Axios, Tailwind CSS  
 - **Backend**: FastAPI, LangChain, FAISS, HuggingFace Embeddings, Groq LLM  
-- **Database**: FAISS vector store (local)  
+- **Database**: Weaviate vector store (cloud)  
 - **Other Tools**: dotenv for environment variables  
 
 ## 📂 Project Structure
 ```
 
 project-root/
-│── backend/                # FastAPI backend
-│   ├── main.py             # FastAPI entry point
-│   ├── vectorstore/        # FAISS database storage
-│   └── requirements.txt    # Backend dependencies
-│
-│── frontend/               # Next.js frontend
-│   ├── app/                # Next.js pages/components
-│   ├── components/         # Chat UI components
+│── backend/                   # FastAPI backend
+│   ├── chatbot.py          
+│       ├── app/       
+|           ├── api/
+|               ├── chatbot/
+|                   ├── rag.py  # FastAPI entry point 
+│       └── requirement.txt     # Backend dependencies
+│   └── .env                    # API keys and configs
+│── frontend/ai-chat-docs   # Next.js frontend
+│   ├── src/                # Next.js pages/components
+│       ├── app/            # Chat UI components
 │   ├── package.json        # Frontend dependencies
 │   └── README.md           # (this file)
-│
-└── .env                    # API keys and configs
+
 
 ````
 
