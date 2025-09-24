@@ -90,7 +90,3 @@ Frontend available at: **[http://localhost:3000](http://localhost:3000)**
 2. Ask a question in the chat.
    → Backend retrieves relevant info and answers with context.
 3. Continue asking follow-ups — chatbot remembers past questions.
-
-## 🔑 Environment Variables
-
-* `GROQ_API_KEY` → Your Groq API key (required).
