@@ -79,13 +79,26 @@ export default function Home() {
         params: { pdf_id: pdfId, query: input },
       });
 
+      // const botMessage = {
+      //   type: "bot",
+      //   text: res.data.answer || "No answer received.",
+      //   timestamp: getTimestamp(),
+      // };
+
+      // setChat((prev) => [...prev, botMessage]);
+      // Extract answer
       const botMessage = {
         type: "bot",
         text: res.data.answer || "No answer received.",
         timestamp: getTimestamp(),
       };
 
+      // Append both user and bot messages to local chat UI
       setChat((prev) => [...prev, botMessage]);
+
+      // Optional: log history if you want debugging
+      console.log("Conversation history:", res.data.chat_history);
+
     } catch (err) {
       setChat((prev) => [
         ...prev,
@@ -145,8 +158,8 @@ export default function Home() {
 
               <div
                 className={`relative px-5 py-3 rounded-2xl text-base leading-relaxed shadow-md max-w-[80%] mb-4 ${msg.type === "user"
-                    ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-br-none"
-                    : "bg-white text-gray-900 rounded-bl-none border border-gray-200"
+                  ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-br-none"
+                  : "bg-white text-gray-900 rounded-bl-none border border-gray-200"
                   }`}
                 style={{ whiteSpace: "pre-wrap" }}
               >

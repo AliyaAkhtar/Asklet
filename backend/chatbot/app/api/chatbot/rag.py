@@ -12,6 +12,8 @@ import re
 import numpy as np
 
 from datetime import datetime
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
 
 from sentence_transformers import SentenceTransformer
 from langchain.vectorstores import Weaviate
@@ -40,6 +42,9 @@ rag_router = APIRouter()
 
 
 load_dotenv()
+
+# Dictionary to keep memory per pdf_id (or could use user_id + pdf_id)
+chat_memories = {}
 
 # Load environment variables
 WEAVIATE_URL = os.getenv("WEAVIATE_URL")
@@ -187,6 +192,14 @@ async def chat_with_pdf(pdf_id: str, query: str):
                 "Excerpts:\n{context}\n\nQuestion: {question}\n\nAnswer:"
         )
 
+        # Initialize memory (one per PDF session)
+        if pdf_id not in chat_memories:
+            chat_memories[pdf_id] = ConversationBufferMemory(
+                memory_key="chat_history",
+                return_messages=True
+            )
+        memory = chat_memories[pdf_id]
+
         # llm = ChatOpenAI(model="gpt-4o", openai_api_key=OPENAI_API_KEY)
         llm = ChatGroq(
             groq_api_key=os.getenv("GROQ_API_KEY"),
@@ -198,14 +211,40 @@ async def chat_with_pdf(pdf_id: str, query: str):
             max_retries=2,
         )
 
-        rag_chain = RetrievalQA.from_chain_type(llm, retriever=retriever, chain_type="stuff", chain_type_kwargs={"prompt": prompt_template})
+        # rag_chain = RetrievalQA.from_chain_type(llm, retriever=retriever, chain_type="stuff", chain_type_kwargs={"prompt": prompt_template})
 
-        response = rag_chain.run(query)
+        # Conversational RAG
+        qa_chain = ConversationalRetrievalChain.from_llm(
+            llm=llm,
+            retriever=retriever,
+            memory=memory,
+            combine_docs_chain_kwargs={
+                "prompt": PromptTemplate(
+                    input_variables=["context", "question", "chat_history"],
+                    template=(
+                        "You are a context-aware assistant answering based on documents and chat history.\n\n"
+                        "Chat History:\n{chat_history}\n\n"
+                        "Excerpts:\n{context}\n\n"
+                        "Question: {question}\n\n"
+                        "Answer:"
+                    ),
+                )
+            },
+        )
+
+        # response = rag_chain.run(query)
+        response = qa_chain({"question": query})
 
         print("Response: ", response)
 
-        return {"answer": response}
-
+        # return {"answer": response}
+        return {
+            "answer": response["answer"],
+            "chat_history": [
+                {"role": m.type, "content": m.content} for m in memory.chat_memory.messages
+            ],
+        }
+    
     except Exception as e:
         return {"error": str(e)}
 
